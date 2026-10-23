@@ -1,4 +1,4 @@
-# Multi-Channel DMA Engine — Microarchitecture Spec
+# Multi-Channel DMA Engine - Microarchitecture Spec
 
 ## 1. What it does
 
@@ -48,10 +48,10 @@ independently and share the memory through round-robin arbitration.
 | 0 | [63:32] | dst_addr (8-byte aligned) |
 | 1 | [15:0] | length in bytes (non-zero, multiple of 8) |
 | 1 | [17:16] | burst code: 0=1, 1=2, 2=4, 3=8 beats |
-| 1 | [18] | last — end of chain |
-| 1 | [19] | irq_en — set DONE when this descriptor completes |
+| 1 | [18] | last - end of chain |
+| 1 | [19] | irq_en - set DONE when this descriptor completes |
 | 1 | [31:20] | reserved |
-| 1 | [63:32] | next_ptr — next descriptor (ignored if last) |
+| 1 | [63:32] | next_ptr - next descriptor (ignored if last) |
 
 Scatter-gather = descriptors linked through `next_ptr`. Each descriptor is one
 contiguous piece; the chain stitches non-contiguous pieces together with no CPU work
@@ -77,16 +77,16 @@ Separate read and write ports, valid/ready handshakes, one burst in flight per p
 | Read port | Write port |
 |---|---|
 | req: valid/ready, addr, len (beats) | req: valid/ready, addr, len |
-| data: valid, data, last (no ready — DMA always accepts) | data: valid/ready, data, last |
+| data: valid, data, last (no ready - DMA always accepts) | data: valid/ready, data, last |
 
 Writes are posted: a write burst is complete when its last beat is accepted. There is
 no write-response channel.
 
 ## 7. Channel operation
 
-**Main/read FSM:** `IDLE → FETCH_REQ → FETCH_DATA → CHECK → RD_ISSUE ⇄ RD_DATA → WAIT_WR → (FETCH_REQ | IDLE)`, with `ERR → IDLE` on a bad descriptor.
+**Main/read FSM:** `IDLE -> FETCH_REQ -> FETCH_DATA -> CHECK -> RD_ISSUE ⇄ RD_DATA -> WAIT_WR -> (FETCH_REQ | IDLE)`, with `ERR -> IDLE` on a bad descriptor.
 
-**Write FSM:** `W_IDLE → W_REQ → W_DATA → W_IDLE`.
+**Write FSM:** `W_IDLE -> W_REQ -> W_DATA -> W_IDLE`.
 
 Flow-control rules, which are the heart of the design:
 
@@ -102,7 +102,7 @@ burst N+1 while its write side is still writing burst N.
 
 ## 8. Port arbitration (`dma_top.sv`)
 
-Each port runs `P_IDLE → P_REQ → P_DATA`. In P_IDLE the round-robin arbiter picks a
+Each port runs `P_IDLE -> P_REQ -> P_DATA`. In P_IDLE the round-robin arbiter picks a
 requester and the owner is **latched**. The owner keeps the port for the whole burst.
 Latching matters: the arbiter's grant is combinational, so if a new request arrived
 while waiting for `ready`, the presented address could change mid-handshake, which
@@ -151,7 +151,7 @@ read beats, and protocol checks (request stability, write `last` correctness).
 | T1 | single descriptor, data + DONE + irq |
 | T2 | 3-descriptor scatter-gather, bursts 1/2/8, partial last burst, irq_en only on last |
 | T3 | all 4 channels at once, all 4 burst sizes, arbitration fairness |
-| T4 | misaligned pointer and zero-length descriptor → ERROR, no DONE |
+| T4 | misaligned pointer and zero-length descriptor -> ERROR, no DONE |
 | T5 | IRQ mask and W1C |
 | T6 | START to a busy channel is ignored |
 
